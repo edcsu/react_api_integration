@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 
 import Places from './Places.jsx';
 import ErrorPage from './Error.jsx';
-
+import { sortPlacesByDistance } from '../loc.js'
 export default function AvailablePlaces({ onSelectPlace }) {
-  const [availablePlaces, setAvailable] = useState([])
+  const [availablePlaces, setAvailablePlaces] = useState([])
   const [isFetching, setIsFetching] = useState(false)
   const [error, setError] = useState()
 
@@ -20,7 +20,11 @@ export default function AvailablePlaces({ onSelectPlace }) {
           throw new Error("Faild to get places");
         }
 
-        setAvailable(data.places)
+        navigator.geolocation.getCurrentPosition((position) => {
+          const sortedPlaces = sortPlacesByDistance(data.places, position.coords.latitude, position.coords.longitude)
+          setAvailablePlaces(sortedPlaces)
+        })
+
       } catch (error) {
         setError({
           message: error.message || 'Could not retrieve places, try again later'
